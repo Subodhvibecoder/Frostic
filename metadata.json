@@ -1,0 +1,6 @@
+{
+  "name": "Frostic",
+  "description": "Enterprise AI Cost Intelligence, Spend Optimization & Savings Recovery Platform. Find waste, predict costs, and recover savings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
