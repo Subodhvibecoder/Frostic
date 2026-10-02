@@ -28,18 +28,32 @@ export default function AICopilot({
   currency
 }: AICopilotProps) {
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'm-1',
-      sender: 'ai',
-      text: "Hello! I am Frostic Cognitive Assistant. I have fully indexed your operating expenses, cloud compute layers, and renewal dates. Ask me a question or choose from the executive suggestions below to analyze cost-reduction plans.",
-      timestamp: 'Just now'
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('frostic_copilot_messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved copilot messages", e);
+      }
     }
-  ]);
+    return [
+      {
+        id: 'm-1',
+        sender: 'ai',
+        text: "Hello! I am Frostic Cognitive Assistant. I have fully indexed your operating expenses, cloud compute layers, and renewal dates. Ask me a question or choose from the executive suggestions below to analyze cost-reduction plans.",
+        timestamp: 'Just now'
+      }
+    ];
+  });
   const [inputVal, setInputVal] = useState<string>('');
   const [isTyping, setIsTyping] = useState<boolean>(false);
   
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('frostic_copilot_messages', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

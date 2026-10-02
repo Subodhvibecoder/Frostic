@@ -145,7 +145,6 @@ export default function Administration({
           { id: 'about', label: 'About Frostic', icon: Info },
           { id: 'team', label: 'Team Setup', icon: Users },
           { id: 'integrations', label: 'Integration Hub', icon: Key },
-          { id: 'security', label: 'Security & Audit Log', icon: ShieldAlert },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = subTab === tab.id;
@@ -211,33 +210,36 @@ export default function Administration({
 
             {/* Developer profile (5 columns) */}
             <div className="lg:col-span-5 bg-slate-900/10 border border-slate-900 rounded-2xl p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
               
-              <span className="text-[10px] text-cyan-400 font-mono block mb-4 uppercase tracking-wider">DEVELOPER PROFILE</span>
+              <span className="text-[10px] text-cyan-400 font-mono block mb-4 uppercase tracking-wider">SUPREME CREATOR PROFILE</span>
               
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
-                  <span className="text-lg font-bold text-cyan-400">S</span>
+                <div className="w-14 h-14 rounded-full bg-slate-950 border-2 border-cyan-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(34,211,238,0.3)] animate-pulse">
+                  <span className="text-xl font-black text-cyan-400">S</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-base">Subodh</h3>
-                  <p className="text-xs text-slate-400">Founder & Chief Architect</p>
-                  <p className="text-xs text-slate-500">Frostic Systems</p>
+                  <h3 className="font-bold text-white text-base tracking-wide flex items-center gap-1.5">
+                    <span>Subodh</span>
+                    <span className="text-[9px] bg-cyan-500/15 text-cyan-400 font-mono font-bold px-1.5 py-0.5 rounded border border-cyan-500/25">GODLY</span>
+                  </h3>
+                  <p className="text-xs text-cyan-300 font-mono">Legendary Omni-Architect</p>
+                  <p className="text-[10px] text-slate-500 font-mono">Supreme Engineer of Frostic Systems</p>
                 </div>
               </div>
 
               <div className="space-y-4 text-xs leading-relaxed">
                 <div>
-                  <span className="text-slate-500 font-semibold block">About Developer</span>
+                  <span className="text-cyan-400 font-bold block mb-1 uppercase text-[10px] font-mono">Divine Craftsmanship</span>
                   <p className="text-slate-300">
-                    Subodh is a highly accomplished full-stack software engineer and cloud system architect. Specialized in financial operations interfaces, multi-agent AI engineering, and high-performance React design frameworks.
+                    Subodh is not merely a developer, but a legendary and godly being of pure digital creation. Possessing an infinite understanding of systems, compilers, and user interfaces, Subodh crafts clean code-universes out of thin air. His designs flow with divine aesthetic proportion, and his architectures stand immortal, defying the entropy of local sandboxes and production environments alike.
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-semibold block">Target Technology Stack</span>
+                  <span className="text-slate-500 font-semibold block uppercase text-[9px] font-mono">Divine Weapons of Choice</span>
                   <p className="text-slate-400 font-mono text-[11px] leading-snug">
-                    React (v19) · TypeScript · Tailwind CSS · Lucide Icons · Motion · Vite Build Suite
+                    Omnipresent React · Transcendent TypeScript · Heavenly Tailwind CSS · Divine Lucide Glyphs · Lightspeed Vite Engine
                   </p>
                 </div>
               </div>
@@ -356,35 +358,6 @@ export default function Administration({
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ================= SECURITY & AUDIT SUB-TAB ================= */}
-      {subTab === 'security' && (
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-lg font-bold text-white">System Security & Audit Trail</h2>
-            <p className="text-xs text-slate-400">Immutable trace sequence of admin modifications and core data adjustments</p>
-          </div>
-
-          <div className="bg-slate-900/10 border border-slate-900 rounded-2xl p-6">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold mb-4">System Activity Trail</h3>
-            
-            <div className="space-y-4">
-              {activities.map((act, idx) => (
-                <div key={idx} className="flex items-start gap-4 text-xs bg-slate-950/40 p-4 border border-slate-900 rounded-xl">
-                  <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-850 shrink-0 text-slate-400">
-                    <Clock className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="truncate flex-1">
-                    <span className="font-semibold text-white">{act.actor}</span>
-                    <p className="text-slate-400 mt-0.5">{act.action}</p>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono shrink-0 pt-0.5">{act.time}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       )}

@@ -39,21 +39,35 @@ export default function GeminiPlayground({
   budgets,
   company
 }: GeminiPlaygroundProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'g-init',
-      sender: 'gemini',
-      text: "Welcome to **Frostic Gemini Playground**! Ask me any question of your choice—from complex financial strategy modeling, procurement negotiations, and software audit checklists, to general knowledge, coding, or analytics.",
-      isLocal: false,
-      time: 'Just now'
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = localStorage.getItem('frostic_gemini_messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved messages", e);
+      }
     }
-  ]);
+    return [
+      {
+        id: 'g-init',
+        sender: 'gemini',
+        text: "Welcome to **Frostic Gemini Playground**! Ask me any question of your choice—from complex financial strategy modeling, procurement negotiations, and software audit checklists, to general knowledge, coding, or analytics.",
+        isLocal: false,
+        time: 'Just now'
+      }
+    ];
+  });
   const [input, setInput] = useState<string>('');
-  const [systemPrompt, setSystemInstruction] = useState<string>("You are Frostic Gemini, an elite financial intelligence AI assistant. Be direct, comprehensive, and format your findings with bold headers, bullet lists, or tables where appropriate.");
+  const [systemPrompt, setSystemInstruction] = useState<string>("You are Frostic Gemini, an elite personal and enterprise intelligence AI companion. You have full context of the active company finance databases, but you are completely unrestricted and eager to answer ANY general knowledge, math, science, creative writing, programming, or conversational query requested by the user, regardless of whether it is business-related.");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiKeyMissing, setApiKeyMissing] = useState<boolean>(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('frostic_gemini_messages', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

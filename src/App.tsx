@@ -51,25 +51,95 @@ import CapabilityIndex from './components/CapabilityIndex';
 import Administration from './components/Administration';
 
 export default function App() {
-  const [isOnboarded, setIsOnboarded] = useState<boolean>(false);
+  // Read state from localStorage helper
+  const getStorage = <T,>(key: string, defaultValue: T): T => {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(`Failed to parse localStorage key ${key}`, e);
+      }
+    }
+    return defaultValue;
+  };
+
+  const [isOnboarded, setIsOnboarded] = useState<boolean>(() => getStorage('frostic_is_onboarded', false));
   const [activeTab, setActiveTab] = useState<string>('command-center');
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => getStorage('frostic_is_collapsed', false));
 
   // Global settings state
-  const [currency, setCurrency] = useState<CurrencyConfig>(CURRENCIES.USD);
-  const [user, setUser] = useState<UserProfile>({ ...INITIAL_USER });
-  const [company, setCompany] = useState<CompanyProfile>({ ...INITIAL_COMPANY });
-  const [objectives, setObjectives] = useState<string[]>([...INITIAL_OBJECTIVES]);
+  const [currency, setCurrency] = useState<CurrencyConfig>(() => getStorage('frostic_currency', CURRENCIES.USD));
+  const [user, setUser] = useState<UserProfile>(() => getStorage('frostic_user', { ...INITIAL_USER }));
+  const [company, setCompany] = useState<CompanyProfile>(() => getStorage('frostic_company', { ...INITIAL_COMPANY }));
+  const [objectives, setObjectives] = useState<string[]>(() => getStorage('frostic_objectives', [...INITIAL_OBJECTIVES]));
 
   // Global data tables (Fully editable/CRUD)
-  const [expenses, setExpenses] = useState<Expense[]>([...INITIAL_EXPENSES]);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([...INITIAL_SUBSCRIPTIONS]);
-  const [vendors, setVendors] = useState<Vendor[]>([...INITIAL_VENDORS]);
-  const [invoices, setInvoices] = useState<Invoice[]>([...INITIAL_INVOICES]);
-  const [cloudCosts, setCloudCosts] = useState<CloudCosts>({ ...INITIAL_CLOUD_COSTS });
-  const [budgets, setBudgets] = useState<Budget[]>([...INITIAL_BUDGETS]);
-  const [team, setTeam] = useState<TeamMember[]>([...INITIAL_TEAM]);
-  const [opportunities, setOpportunities] = useState<SavingsOpportunity[]>([...INITIAL_SAVINGS_OPPORTUNITIES]);
+  const [expenses, setExpenses] = useState<Expense[]>(() => getStorage('frostic_expenses', [...INITIAL_EXPENSES]));
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => getStorage('frostic_subscriptions', [...INITIAL_SUBSCRIPTIONS]));
+  const [vendors, setVendors] = useState<Vendor[]>(() => getStorage('frostic_vendors', [...INITIAL_VENDORS]));
+  const [invoices, setInvoices] = useState<Invoice[]>(() => getStorage('frostic_invoices', [...INITIAL_INVOICES]));
+  const [cloudCosts, setCloudCosts] = useState<CloudCosts>(() => getStorage('frostic_cloud_costs', { ...INITIAL_CLOUD_COSTS }));
+  const [budgets, setBudgets] = useState<Budget[]>(() => getStorage('frostic_budgets', [...INITIAL_BUDGETS]));
+  const [team, setTeam] = useState<TeamMember[]>(() => getStorage('frostic_team', [...INITIAL_TEAM]));
+  const [opportunities, setOpportunities] = useState<SavingsOpportunity[]>(() => getStorage('frostic_opportunities', [...INITIAL_SAVINGS_OPPORTUNITIES]));
+
+  // Sync side effects
+  React.useEffect(() => {
+    localStorage.setItem('frostic_is_onboarded', JSON.stringify(isOnboarded));
+  }, [isOnboarded]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_is_collapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_currency', JSON.stringify(currency));
+  }, [currency]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_user', JSON.stringify(user));
+  }, [user]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_company', JSON.stringify(company));
+  }, [company]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_objectives', JSON.stringify(objectives));
+  }, [objectives]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_expenses', JSON.stringify(expenses));
+  }, [expenses]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_subscriptions', JSON.stringify(subscriptions));
+  }, [subscriptions]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_vendors', JSON.stringify(vendors));
+  }, [vendors]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_invoices', JSON.stringify(invoices));
+  }, [invoices]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_cloud_costs', JSON.stringify(cloudCosts));
+  }, [cloudCosts]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_budgets', JSON.stringify(budgets));
+  }, [budgets]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_team', JSON.stringify(team));
+  }, [team]);
+
+  React.useEffect(() => {
+    localStorage.setItem('frostic_opportunities', JSON.stringify(opportunities));
+  }, [opportunities]);
 
   // Handle Onboarding Completion
   const handleOnboardingComplete = (newUser: UserProfile, newCompany: CompanyProfile, newObjectives: string[]) => {
