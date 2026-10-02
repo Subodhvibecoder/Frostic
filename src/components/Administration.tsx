@@ -74,15 +74,31 @@ export default function Administration({
     { actor: 'System Core', action: 'Executed AI Spending Scan and mapped cost health', time: '15 minutes ago' }
   ]);
 
-  // Integration Hub states
-  const [integrations, setIntegrations] = useState([
-    { id: 'aws', name: 'Amazon Web Services', category: 'Cloud Infrastructure', connected: true, logo: 'AWS' },
-    { id: 'notion', name: 'Notion Workspace', category: 'Productivity Tools', connected: true, logo: 'Notion' },
-    { id: 'slack', name: 'Slack Corporate', category: 'Communication', connected: true, logo: 'Slack' },
-    { id: 'figma', name: 'Figma Enterprise', category: 'Design Utilities', connected: true, logo: 'Figma' },
-    { id: 'plaid', name: 'Plaid Core Feeds', category: 'Banking Feeds', connected: false, logo: 'Plaid' },
-    { id: 'quickbooks', name: 'QuickBooks Ledger', category: 'Accounting Platforms', connected: false, logo: 'QBO' },
-  ]);
+  // Integration Hub states initialized to EMPTY [] by default (Nothing populated unless demo dataset loaded)
+  const [integrations, setIntegrations] = useState<Array<{ id: string; name: string; category: string; connected: boolean; logo: string }>>(() => {
+    const saved = localStorage.getItem('frostic_integrations');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse integrations", e);
+      }
+    }
+    return []; // Start with NOTHING (empty)
+  });
+
+  // Persist integrations state
+  React.useEffect(() => {
+    localStorage.setItem('frostic_integrations', JSON.stringify(integrations));
+  }, [integrations]);
+
+  // Integration Modal states
+  const [isIntegrationModalOpen, setIsIntegrationModalOpen] = useState<boolean>(false);
+  const [integrationForm, setIntegrationForm] = useState({
+    name: '',
+    category: 'Cloud Infrastructure',
+    logo: ''
+  });
 
   const toggleIntegration = (id: string) => {
     setIntegrations(prev => prev.map(item => {
@@ -97,6 +113,33 @@ export default function Administration({
       }
       return item;
     }));
+  };
+
+  const handleAddIntegration = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!integrationForm.name.trim()) return;
+
+    // Auto-generate abbreviation logo from name
+    const words = integrationForm.name.trim().split(/\s+/);
+    const logoTxt = words.map(w => w[0].toUpperCase()).slice(0, 3).join('');
+
+    const newInt = {
+      id: `int-${Date.now()}`,
+      name: integrationForm.name.trim(),
+      category: integrationForm.category,
+      connected: true, // Auto connect on creation
+      logo: logoTxt || 'INT'
+    };
+
+    setIntegrations(prev => [...prev, newInt]);
+    setActivities(acts => [
+      { actor: 'Subodh', action: `Added Integration Channel: ${newInt.name}`, time: 'Just now' },
+      ...acts
+    ]);
+
+    // Reset Form
+    setIntegrationForm({ name: '', category: 'Cloud Infrastructure', logo: '' });
+    setIsIntegrationModalOpen(false);
   };
 
   const handleSaveTeam = (e: React.FormEvent) => {
@@ -270,95 +313,143 @@ export default function Administration({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {team.map((m) => (
-              <div key={m.id} className="bg-slate-900/10 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center font-bold text-cyan-400 shrink-0 text-sm">
-                      {m.name[0]}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white text-xs">{m.name}</h3>
-                      <p className="text-[10px] text-slate-400">{m.role}</p>
-                    </div>
-                  </div>
-
-                  <span className="px-2.5 py-0.5 rounded bg-slate-950 border border-slate-900 text-[10px] text-slate-400 font-mono">
-                    DEPT: {m.department.toUpperCase()}
-                  </span>
-
-                  <p className="text-xs text-slate-500 mt-3 leading-relaxed">{m.bio}</p>
-                </div>
-
-                <div className="flex justify-between items-center border-t border-slate-900 pt-4 mt-4">
-                  <span className="text-[10px] text-slate-400 font-mono">{m.email}</span>
-                  <div className="flex gap-1.5">
-                    <button 
-                      onClick={() => {
-                        setTeamForm(m);
-                        setEditingMemberId(m.id);
-                        setIsTeamModalOpen(true);
-                      }}
-                      className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-950 border border-transparent hover:border-slate-800"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteTeam(m.id)}
-                      className="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-950 border border-transparent hover:border-slate-800"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
+          {team.length === 0 ? (
+            <div className="bg-slate-900/10 border border-slate-900 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4">
+              <Users className="w-12 h-12 text-cyan-400/45 mx-auto animate-pulse" />
+              <div className="space-y-1">
+                <h3 className="font-bold text-white text-sm">No Active Personnel</h3>
+                <p className="text-xs text-slate-400">Your organization roster is empty. Invite department heads, financial operators, and engineers, or load the high-integrity corporate demo dataset.</p>
               </div>
-            ))}
-          </div>
+              <button 
+                onClick={() => {
+                  setTeamForm({ name: '', role: '', department: 'Engineering', email: '', bio: '' });
+                  setEditingMemberId(null);
+                  setIsTeamModalOpen(true);
+                }}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Invite First Team Member</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {team.map((m) => (
+                <div key={m.id} className="bg-slate-900/10 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center font-bold text-cyan-400 shrink-0 text-sm">
+                        {m.name[0]}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-xs">{m.name}</h3>
+                        <p className="text-[10px] text-slate-400">{m.role}</p>
+                      </div>
+                    </div>
+
+                    <span className="px-2.5 py-0.5 rounded bg-slate-950 border border-slate-900 text-[10px] text-slate-400 font-mono">
+                      DEPT: {m.department.toUpperCase()}
+                    </span>
+
+                    <p className="text-xs text-slate-500 mt-3 leading-relaxed">{m.bio}</p>
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-slate-900 pt-4 mt-4">
+                    <span className="text-[10px] text-slate-400 font-mono">{m.email}</span>
+                    <div className="flex gap-1.5">
+                      <button 
+                        onClick={() => {
+                          setTeamForm(m);
+                          setEditingMemberId(m.id);
+                          setIsTeamModalOpen(true);
+                        }}
+                        className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-950 border border-transparent hover:border-slate-800"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteTeam(m.id)}
+                        className="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-950 border border-transparent hover:border-slate-800"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* ================= INTEGRATIONS SUB-TAB ================= */}
       {subTab === 'integrations' && (
         <div className="space-y-6">
-          <div>
-            <h2 className="text-lg font-bold text-white">Corporate Integration Hub</h2>
-            <p className="text-xs text-slate-400">Sync with QuickBooks ledger feeds, core banks, and cloud systems to ingest operations</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-bold text-white">Corporate Integration Hub</h2>
+              <p className="text-xs text-slate-400">Sync with QuickBooks ledger feeds, core banks, and cloud systems to ingest operations</p>
+            </div>
+            
+            <button 
+              onClick={() => setIsIntegrationModalOpen(true)}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Custom Integration Sync</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {integrations.map((item) => (
-              <div key={item.id} className="bg-slate-900/10 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-10 h-10 bg-slate-950 border border-slate-900 rounded-xl flex items-center justify-center font-bold text-sm text-slate-300 font-mono">
-                      {item.logo}
+          {integrations.length === 0 ? (
+            <div className="bg-slate-900/10 border border-slate-900 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4">
+              <Key className="w-12 h-12 text-cyan-400/45 mx-auto animate-pulse" />
+              <div className="space-y-1">
+                <h3 className="font-bold text-white text-sm">No Integration Syncs Connected</h3>
+                <p className="text-xs text-slate-400">Create a clean, custom sync channel to integrate your financial pipeline logs or load the full Corporate demo dataset.</p>
+              </div>
+              <button 
+                onClick={() => setIsIntegrationModalOpen(true)}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Establish First Integration Sync</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {integrations.map((item) => (
+                <div key={item.id} className="bg-slate-900/10 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="w-10 h-10 bg-slate-950 border border-slate-900 rounded-xl flex items-center justify-center font-bold text-sm text-slate-300 font-mono">
+                        {item.logo}
+                      </div>
+                      
+                      <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-md ${
+                        item.connected ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-slate-950 text-slate-500 border border-slate-900'
+                      }`}>
+                        {item.connected ? 'ACTIVE' : 'READY_TO_CONNECT'}
+                      </span>
                     </div>
-                    
-                    <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-md ${
-                      item.connected ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-slate-950 text-slate-500 border border-slate-900'
-                    }`}>
-                      {item.connected ? 'ACTIVE' : 'READY_TO_CONNECT'}
-                    </span>
+
+                    <h3 className="font-bold text-white text-xs">{item.name}</h3>
+                    <p className="text-[10px] text-slate-500 font-mono block mt-1 uppercase">CATEGORY: {item.category}</p>
                   </div>
 
-                  <h3 className="font-bold text-white text-xs">{item.name}</h3>
-                  <p className="text-[10px] text-slate-500 font-mono block mt-1 uppercase">CATEGORY: {item.category}</p>
+                  <button 
+                    onClick={() => toggleIntegration(item.id)}
+                    className={`w-full mt-6 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                      item.connected 
+                        ? 'bg-slate-950 text-slate-400 border-slate-900 hover:text-rose-400 hover:border-rose-500/35' 
+                        : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border-cyan-500/35 shadow-md shadow-cyan-500/5'
+                    }`}
+                  >
+                    {item.connected ? 'Disconnect Sync Channel' : 'Establish Integration Sync'}
+                  </button>
                 </div>
-
-                <button 
-                  onClick={() => toggleIntegration(item.id)}
-                  className={`w-full mt-6 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                    item.connected 
-                      ? 'bg-slate-950 text-slate-400 border-slate-900 hover:text-rose-400 hover:border-rose-500/35' 
-                      : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border-cyan-500/35 shadow-md shadow-cyan-500/5'
-                  }`}
-                >
-                  {item.connected ? 'Disconnect Sync Channel' : 'Establish Integration Sync'}
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -449,6 +540,70 @@ export default function Administration({
                   className="flex-1 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-xs font-semibold"
                 >
                   Save Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= CUSTOM INTEGRATION MODAL ================= */}
+      {isIntegrationModalOpen && (
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scaleUp">
+            <div className="p-6 border-b border-slate-900 flex justify-between items-center">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                Establish Custom Integration Sync
+              </h3>
+              <button onClick={() => setIsIntegrationModalOpen(false)} className="text-slate-400 hover:text-white text-xs font-mono">
+                CLOSE
+              </button>
+            </div>
+
+            <form onSubmit={handleAddIntegration} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Integration Name / Product</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. Stripe, Salesforce CRM, Datadog"
+                  value={integrationForm.name}
+                  onChange={(e) => setIntegrationForm({ ...integrationForm, name: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Integration Category</label>
+                <select
+                  value={integrationForm.category}
+                  onChange={(e) => setIntegrationForm({ ...integrationForm, category: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="Cloud Infrastructure">Cloud Infrastructure</option>
+                  <option value="Productivity Tools">Productivity Tools</option>
+                  <option value="Communication">Communication</option>
+                  <option value="Design Utilities">Design Utilities</option>
+                  <option value="Banking Feeds">Banking Feeds</option>
+                  <option value="Accounting Platforms">Accounting Platforms</option>
+                  <option value="Marketing Tools">Marketing Tools</option>
+                  <option value="Sales Platforms">Sales Platforms</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t border-slate-900">
+                <button 
+                  type="button" 
+                  onClick={() => setIsIntegrationModalOpen(false)}
+                  className="flex-1 py-2 bg-slate-900 text-slate-400 hover:text-white rounded-lg text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-xs font-semibold"
+                >
+                  Connect Channel
                 </button>
               </div>
             </form>

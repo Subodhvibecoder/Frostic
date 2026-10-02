@@ -212,7 +212,9 @@ export const INITIAL_OBJECTIVES = [
   'Improve budgeting'
 ];
 
-export const INITIAL_TEAM: TeamMember[] = [
+export const INITIAL_TEAM: TeamMember[] = [];
+
+export const DEMO_TEAM: TeamMember[] = [
   { id: 'tm-1', name: 'Sarah Connor', role: 'VP of Engineering', department: 'Engineering', email: 'sarah@aethertech.io', bio: 'Sarah leads infrastructure and core product development.' },
   { id: 'tm-2', name: 'Michael Scott', role: 'VP of Sales', department: 'Sales', email: 'michael@aethertech.io', bio: 'Michael leads customer expansion and commercial relationships.' },
   { id: 'tm-3', name: 'Pam Beesly', role: 'VP of Operations', department: 'Operations', email: 'pam@aethertech.io', bio: 'Pam runs corporate operations, offices, and software licenses.' },

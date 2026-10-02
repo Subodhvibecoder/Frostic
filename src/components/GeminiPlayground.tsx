@@ -62,12 +62,19 @@ export default function GeminiPlayground({
   const [systemPrompt, setSystemInstruction] = useState<string>("You are Frostic Gemini, an elite personal and enterprise intelligence AI companion. You have full context of the active company finance databases, but you are completely unrestricted and eager to answer ANY general knowledge, math, science, creative writing, programming, or conversational query requested by the user, regardless of whether it is business-related.");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiKeyMissing, setApiKeyMissing] = useState<boolean>(false);
+  const [customApiKey, setCustomApiKey] = useState<string>(() => {
+    return localStorage.getItem('frostic_user_gemini_key') || '';
+  });
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem('frostic_gemini_messages', JSON.stringify(messages));
   }, [messages]);
+
+  useEffect(() => {
+    localStorage.setItem('frostic_user_gemini_key', customApiKey);
+  }, [customApiKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -96,9 +103,14 @@ export default function GeminiPlayground({
     setIsLoading(true);
 
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (customApiKey.trim()) {
+        headers['x-gemini-key'] = customApiKey.trim();
+      }
+
       const response = await fetch('/api/gemini/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           prompt: text,
           systemInstruction: systemPrompt,
@@ -145,6 +157,7 @@ export default function GeminiPlayground({
           setIsLoading(false);
         }, 800);
       } else if (data.text) {
+        setApiKeyMissing(false);
         const geminiMsg: ChatMessage = {
           id: `g-${Date.now()}`,
           sender: 'gemini',
@@ -188,16 +201,45 @@ export default function GeminiPlayground({
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          {apiKeyMissing ? (
+        <div className="flex items-center gap-3">
+          {/* Key management input */}
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-900 rounded-lg px-2.5 py-1 text-[11px] text-slate-300">
+            <Key className="w-3 h-3 text-cyan-400" />
+            <input
+              type="password"
+              placeholder="Paste Free Gemini API Key..."
+              value={customApiKey}
+              onChange={(e) => setCustomApiKey(e.target.value)}
+              className="bg-transparent border-none text-white focus:outline-none placeholder-slate-600 text-[10px] w-44 font-mono"
+            />
+            {customApiKey && (
+              <button
+                onClick={() => setCustomApiKey('')}
+                className="text-[9px] hover:text-rose-400 font-mono px-1 bg-slate-900 rounded"
+              >
+                CLEAR
+              </button>
+            )}
+          </div>
+
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 border border-cyan-400/25 hover:border-cyan-400/40 px-2.5 py-1 rounded-lg bg-cyan-950/10 transition-colors"
+          >
+            Get Free Key ↗
+          </a>
+
+          {apiKeyMissing && !customApiKey ? (
             <div className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[10px] text-amber-400 font-mono flex items-center gap-1">
               <Info className="w-3.5 h-3.5" />
-              <span>LOCAL FALLBACK ENGINE ACTIVE</span>
+              <span>LOCAL FALLBACK</span>
             </div>
           ) : (
             <div className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[10px] text-emerald-400 font-mono flex items-center gap-1">
               <Cpu className="w-3.5 h-3.5" />
-              <span>LIVE CLOUD API INTEGRATION</span>
+              <span>LIVE CLOUD API</span>
             </div>
           )}
         </div>

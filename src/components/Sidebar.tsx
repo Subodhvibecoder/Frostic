@@ -28,7 +28,8 @@ import {
   User,
   Info,
   Layers,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react';
 import { UserProfile, CompanyProfile, CurrencyConfig } from '../data';
 
@@ -41,6 +42,7 @@ interface SidebarProps {
   setCurrency: (c: string) => void;
   isCollapsed: boolean;
   setIsCollapsed: (c: boolean) => void;
+  onLogout: () => void;
 }
 
 export default function Sidebar({
@@ -51,7 +53,8 @@ export default function Sidebar({
   currency,
   setCurrency,
   isCollapsed,
-  setIsCollapsed
+  setIsCollapsed,
+  onLogout
 }: SidebarProps) {
   
   const groups = [
@@ -196,22 +199,32 @@ export default function Sidebar({
           </div>
         )}
 
-        <div className="flex items-center gap-3 overflow-hidden bg-slate-900/20 p-1 rounded-lg border border-slate-900/40">
-          <img 
-            src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'} 
-            alt="Profile Avatar" 
-            className="w-8 h-8 rounded-full border border-slate-800 object-cover shrink-0"
-            onError={(e) => {
-              // Fallback if image fails
-              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=256&auto=format&fit=crop';
-            }}
-          />
-          {!isCollapsed && (
-            <div className="truncate">
-              <span className="text-xs font-semibold text-slate-200 block truncate">{user.name}</span>
-              <span className="text-[10px] text-slate-400 truncate block">{user.role}</span>
-            </div>
-          )}
+        <div className="flex items-center justify-between gap-1 overflow-hidden bg-slate-900/20 p-1.5 rounded-lg border border-slate-900/40">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <img 
+              src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'} 
+              alt="Profile Avatar" 
+              className="w-8 h-8 rounded-full border border-slate-800 object-cover shrink-0"
+              onError={(e) => {
+                // Fallback if image fails
+                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=256&auto=format&fit=crop';
+              }}
+            />
+            {!isCollapsed && (
+              <div className="truncate">
+                <span className="text-xs font-semibold text-slate-200 block truncate">{user.name}</span>
+                <span className="text-[10px] text-slate-400 truncate block">{user.role}</span>
+              </div>
+            )}
+          </div>
+          
+          <button
+            onClick={onLogout}
+            title="Log Out of Workspace"
+            className="p-1.5 rounded-md hover:bg-rose-950/20 hover:text-rose-400 text-slate-400 transition-colors shrink-0 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

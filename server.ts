@@ -33,8 +33,10 @@ const ai = new GoogleGenAI({
 // Proxy route for Gemini AI
 app.post('/api/gemini/chat', async (req, res) => {
   const { prompt, systemInstruction, context } = req.body;
+  const customKey = req.headers['x-gemini-key'] as string;
+  const activeKey = customKey || process.env.GEMINI_API_KEY;
   
-  if (!process.env.GEMINI_API_KEY) {
+  if (!activeKey) {
     // Return a flag indicating fallback is active due to missing key
     return res.status(200).json({
       text: null,
@@ -48,7 +50,17 @@ app.post('/api/gemini/chat', async (req, res) => {
       ? `Active Website Data Context:\n${JSON.stringify(context, null, 2)}\n\nUser Query: ${prompt}`
       : prompt;
 
-    const response = await ai.models.generateContent({
+    // Dynamically initialize client based on active key
+    const dynamicAi = new GoogleGenAI({
+      apiKey: activeKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+
+    const response = await dynamicAi.models.generateContent({
       model: "gemini-3.8-flash",
       contents: contextPrompt,
       config: {

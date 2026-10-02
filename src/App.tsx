@@ -36,7 +36,8 @@ import {
   DEMO_CONTRACTS,
   DEMO_CLOUD_COSTS,
   DEMO_BUDGETS,
-  DEMO_SAVINGS_OPPORTUNITIES
+  DEMO_SAVINGS_OPPORTUNITIES,
+  DEMO_TEAM
 } from './data';
 
 import Onboarding from './components/Onboarding';
@@ -169,7 +170,10 @@ export default function App() {
     setCloudCosts({ compute: 0, storage: 0, databases: 0, networking: 0, transfer: 0, devResources: 0, idlePercent: 0 });
     setBudgets(budgets.map(b => ({ ...b, actual: 0, remaining: b.budget, forecast: 0 })));
     setOpportunities([]);
-    alert('Success: All operating expenses, subscriptions, budgets, and savings pipelines reset to clean 0-Ledger.');
+    setTeam([]); // Clear active team roster
+    localStorage.removeItem('frostic_integrations'); // Purge active integrations
+    alert('Success: All operating expenses, subscriptions, budgets, team setups, and integration hubs reset to clean 0-Ledger.');
+    window.location.reload(); // Instantly reload to synchronize UI caches
   };
 
   // Data restoration trigger
@@ -181,7 +185,21 @@ export default function App() {
     setCloudCosts({ ...DEMO_CLOUD_COSTS });
     setBudgets([...DEMO_BUDGETS]);
     setOpportunities([...DEMO_SAVINGS_OPPORTUNITIES]);
-    alert('Success: High-integrity corporate demo dataset loaded successfully.');
+    setTeam([...DEMO_TEAM]); // Restore default team roster
+    
+    // Restore default integrations
+    const demoIntegrations = [
+      { id: 'aws', name: 'Amazon Web Services', category: 'Cloud Infrastructure', connected: true, logo: 'AWS' },
+      { id: 'notion', name: 'Notion Workspace', category: 'Productivity Tools', connected: true, logo: 'Notion' },
+      { id: 'slack', name: 'Slack Corporate', category: 'Communication', connected: true, logo: 'Slack' },
+      { id: 'figma', name: 'Figma Enterprise', category: 'Design Utilities', connected: true, logo: 'Figma' },
+      { id: 'plaid', name: 'Plaid Core Feeds', category: 'Banking Feeds', connected: false, logo: 'Plaid' },
+      { id: 'quickbooks', name: 'QuickBooks Ledger', category: 'Accounting Platforms', connected: false, logo: 'QBO' },
+    ];
+    localStorage.setItem('frostic_integrations', JSON.stringify(demoIntegrations));
+    
+    alert('Success: High-integrity corporate demo dataset loaded successfully. Team rosters and integrations populated.');
+    window.location.reload(); // Instantly reload to synchronize UI caches
   };
 
   // Switch workspace currency
@@ -190,6 +208,21 @@ export default function App() {
     if (config) {
       setCurrency(config);
     }
+  };
+
+  // Logout Option - Reset onboarding & localStorage states
+  const handleLogout = () => {
+    setIsOnboarded(false);
+    setUser({ ...INITIAL_USER });
+    setCompany({ ...INITIAL_COMPANY });
+    setObjectives([...INITIAL_OBJECTIVES]);
+    
+    localStorage.removeItem('frostic_is_onboarded');
+    localStorage.removeItem('frostic_user');
+    localStorage.removeItem('frostic_company');
+    localStorage.removeItem('frostic_objectives');
+    localStorage.removeItem('frostic_gemini_messages');
+    localStorage.removeItem('frostic_copilot_messages');
   };
 
   if (!isOnboarded) {
@@ -209,6 +242,7 @@ export default function App() {
         setCurrency={handleSetCurrency}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Viewport */}

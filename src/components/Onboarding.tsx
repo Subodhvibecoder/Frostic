@@ -13,6 +13,8 @@ interface OnboardingProps {
 
 export default function Onboarding({ onComplete }: OnboardingProps) {
   const [step, setStep] = useState<number>(0); // 0 = Welcome/Login, 1 = Personal, 2 = Company, 3 = Team, 4 = Objectives, 5 = Review
+  const [password, setPassword] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
   
   // Forms states
   const [userForm, setUserForm] = useState<UserProfile>({ ...INITIAL_USER });
@@ -47,6 +49,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     setStep(prev => prev + 1);
   };
 
+  const handleTryNextStep = () => {
+    if (step === 0) {
+      if (password !== 'Subodh') {
+        setPasswordError("Incorrect decryption key. Only authorized users possessing the creator's password ('Subodh') can enter the Frostic Workspace.");
+        return;
+      }
+    }
+    setPasswordError('');
+    handleNextStep();
+  };
+
   const handleBackStep = () => {
     setStep(prev => Math.max(0, prev - 1));
   };
@@ -73,6 +86,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         return prev + 1;
       });
     }, 1000);
+  };
+
+  const handleTryStartAnalysis = () => {
+    if (step === 0) {
+      if (password !== 'Subodh') {
+        setPasswordError("Incorrect decryption key. Only authorized users possessing the creator's password ('Subodh') can enter the Frostic Workspace.");
+        return;
+      }
+    }
+    setPasswordError('');
+    startAnalysis();
   };
 
   if (isAnalyzing) {
@@ -240,24 +264,114 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     />
                   </div>
                 </div>
+
+                {/* Secure Decryption Gateway Gated with password 'Subodh' */}
+                <div className="border-t border-slate-800 pt-4 mt-4">
+                  <label className="block text-[10px] text-cyan-400 mb-1.5 font-bold uppercase tracking-wider font-mono">WORKSPACE DECRYPTION PASSWORD</label>
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError('');
+                    }}
+                    placeholder="Enter Creator's Signature Password"
+                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-700 focus:outline-none focus:border-cyan-500 transition-colors font-mono"
+                  />
+                  {passwordError ? (
+                    <p className="text-[10px] text-rose-400 font-mono font-semibold mt-2 flex items-start gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                      <span>{passwordError}</span>
+                    </p>
+                  ) : (
+                    <span className="text-[9px] text-slate-500 font-mono mt-1 block">Authentication strictly enforced. Access only unlocked via Creator's password ('Subodh').</span>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button 
-                onClick={handleNextStep}
-                disabled={!userForm.name || !companyForm.name}
+                onClick={handleTryNextStep}
+                disabled={!userForm.name || !companyForm.name || !password}
                 className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-500 hover:to-blue-700 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/35 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                <span>Enter Workspace Setup</span>
+                <span>Decrypt & Enter Setup</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button 
-                onClick={startAnalysis}
-                className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:border-slate-700 rounded-xl font-semibold text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                onClick={handleTryStartAnalysis}
+                disabled={!password}
+                className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:border-slate-700 rounded-xl font-semibold text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Quick-Launch Default Demo</span>
+                <span>Decrypt & Load Demo</span>
               </button>
+            </div>
+
+            {/* FEATURE DIRECTORY INDEX - Visible on Login Panel */}
+            <div className="mt-12 pt-12 border-t border-slate-900 w-full text-left">
+              <h3 className="text-xs font-bold text-cyan-400 font-mono tracking-widest uppercase text-center mb-6">
+                FROSTIC SPENDING INTELLIGENCE CORE CAPABILITIES
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    title: "Spend Intelligence",
+                    desc: "Track recurring outlays across departments, analyze active seat adoption, and verify vendor metrics.",
+                    badge: "LEDGER_INTEGRATED"
+                  },
+                  {
+                    title: "Planning & Forecasts",
+                    desc: "Visualize multi-cloud resource models, detect idle server groups, and forecast upcoming costs.",
+                    badge: "INFRA_OPTIMIZER"
+                  },
+                  {
+                    title: "Savings Recovery Engine",
+                    desc: "Conduct high-confidence overcharge claims, audit invoices, and manage renewal windows.",
+                    badge: "AUTO_CLAIM"
+                  },
+                  {
+                    title: "Cognitive AI Copilot",
+                    desc: "Multi-agent spend summaries that map contract risks and draft renegotiation drafts instantly.",
+                    badge: "COGNITIVE_AGENT"
+                  },
+                  {
+                    title: "Gemini Playground",
+                    desc: "Unrestricted, context-aware sandboxed playground to run general logic, code, or letter templates.",
+                    badge: "LIVE_SANDBOX"
+                  },
+                  {
+                    title: "Workspace Integration Hub",
+                    desc: "Establish secure data links to QuickBooks, Core Banking APIs, AWS CloudWatch, and team structures.",
+                    badge: "BANK_INTEGRATED"
+                  },
+                  {
+                    title: "Invoice Anomaly Auditor",
+                    desc: "Scan ledger attachments with automated OCR to flag double-billings, contract rate hikes, and unnotified tier spikes.",
+                    badge: "ANOMALY_GUARD"
+                  },
+                  {
+                    title: "Notice Window Renewals",
+                    desc: "Proactive contract timers tracking notice-period triggers to let you opt-out or renegotiate rates on time.",
+                    badge: "RENEWAL_ALERTS"
+                  },
+                  {
+                    title: "Savings Optimizer Simulator",
+                    desc: "Run predictive sliders to simulate immediate staff down-provisioning, cloud shrinkages, and SaaS consolidation.",
+                    badge: "SIMULATOR_CORE"
+                  }
+                ].map((feat, idx) => (
+                  <div key={idx} className="bg-slate-950/40 border border-slate-900 rounded-xl p-5 hover:border-cyan-500/20 transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-cyan-500/10 transition-colors"></div>
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-bold text-white text-xs tracking-tight">{feat.title}</span>
+                      <span className="text-[7.5px] bg-cyan-950/55 text-cyan-400 font-mono px-1.5 py-0.5 rounded border border-cyan-400/15">{feat.badge}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-normal">{feat.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
             
             <p className="text-[10px] text-cyan-400 font-mono mt-8 uppercase tracking-wider font-semibold">
